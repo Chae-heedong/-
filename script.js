@@ -1,20 +1,14 @@
-// Your OpenAI API key
-const OPENAI_API_KEY = 'your-api-key-here';
+// OpenAI API 키 설정
+const OPENAI_API_KEY = 'sk-여기에 키 입력'; // 여기에 OpenAI API 키 입력
 
-// Function to send a message
+// 메시지 전송 함수
 async function sendMessage() {
     const inputField = document.getElementById('userInput');
     const message = inputField.value.trim();
-    
     if (message === "") return;
-
-    // Create user message element
     appendMessageToChat('user', message);
-
-    // Clear the input field
     inputField.value = "";
 
-    // OpenAI API request
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -22,28 +16,30 @@ async function sendMessage() {
             'Authorization': `Bearer ${OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-            model: "your-finetuned-model-id",  // Replace with your fine-tuned model ID
-            messages: [
-                { role: "system", content: "You are a helpful assistant." },
-                { role: "user", content: message }
-            ]
+            model: "gpt-4o",
+            messages: [{ role: "user", content: message }]
         })
     });
 
     const data = await response.json();
-
-    // Get AI's reply and add it to the chat
     const aiMessage = data.choices[0].message.content;
     appendMessageToChat('ai', aiMessage);
 }
 
-// Function to append messages to the chat box
+// 음성 인식 버튼을 누르면 음성 입력 시작
+async function startVoiceRecognition() {
+    const response = await fetch('/start_voice_recognition'); // 서버의 음성 인식 기능 호출
+    const text = await response.text(); // 서버에서 변환된 텍스트를 받음
+    document.getElementById('userInput').value = text; // 변환된 텍스트를 입력 필드에 표시
+}
+
+// 채팅 창에 메시지를 추가하는 함수
 function appendMessageToChat(role, message) {
     const chatBox = document.getElementById('chatBox');
     const messageElement = document.createElement('div');
-    messageElement.classList.add('chat-message', role === 'user' ? 'user' : 'ai');
+    messageElement.classList.add('chat-message');
+    messageElement.classList.add(role === 'user' ? 'user' : 'ai');
     messageElement.innerText = message;
-
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
